@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Codenix APIS | Unlimited Developer Access</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <style>
+        :root {
+            --primary: #9333ea;
+            --primary-light: #c084fc;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        .code-font {
+            font-family: 'Fira Code', monospace;
+        }
+        .glass {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .light .glass {
+            background: rgba(255, 255, 255, 0.7);
+            border: 1px solid rgba(147, 51, 234, 0.1);
+        }
+        .purple-glow {
+            box-shadow: 0 0 25px -5px rgba(147, 51, 234, 0.4);
+        }
+        .glitch-text {
+            animation: glitch 3s infinite;
+        }
+        @keyframes glitch {
+            0% { text-shadow: 2px 0 #9333ea, -2px 0 #fff; }
+            25% { text-shadow: -2px 0 #9333ea, 2px 0 #fff; }
+            50% { text-shadow: 2px 0 #fff, -2px 0 #9333ea; }
+            100% { text-shadow: -2px 0 #9333ea, 2px 0 #fff; }
+        }
+        .hidden-api {
+            background: repeating-linear-gradient(45deg, #000, #000 10px, #1a1a1a 10px, #1a1a1a 20px);
+            opacity: 0.8;
+        }
+        .toast {
+            transform: translateY(100px);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .toast.show {
+            transform: translateY(0);
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        darkBg: '#0a0a0a',
+                        lightBg: '#fafafa',
+                        brandPurple: '#9333ea',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-darkBg text-gray-100 dark:bg-darkBg dark:text-gray-100 transition-colors duration-300">
+
+    <nav class="sticky top-0 z-50 glass border-b border-purple-900/20 px-6 py-4 flex justify-between items-center">
+        <div class="flex items-center space-x-2">
+            <div class="w-10 h-10 bg-brandPurple rounded-lg flex items-center justify-center purple-glow">
+                <i class="fas fa-code text-white text-xl"></i>
+            </div>
+            <span class="text-2xl font-extrabold tracking-tighter">CODENIX<span class="text-brandPurple">APIS</span></span>
+        </div>
+        <div class="flex items-center space-x-6">
+            <button id="themeToggle" class="p-2 rounded-full hover:bg-purple-500/10 transition-colors">
+                <i id="themeIcon" class="fas fa-sun text-xl"></i>
+            </button>
+            <div class="hidden md:flex space-x-6 font-medium text-sm uppercase tracking-widest">
+                <a href="#" class="hover:text-brandPurple transition-colors">Documentation</a>
+                <a href="#" class="hover:text-brandPurple transition-colors">Status</a>
+                <a href="#" class="text-brandPurple">API Portal</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-6 py-12">
+        <header class="text-center mb-16 relative">
+            <div class="absolute -top-20 left-1/2 -translate-x-1/2 w-64 h-64 bg-brandPurple/20 blur-[100px] rounded-full"></div>
+            <h1 class="text-5xl md:text-7xl font-black mb-6 leading-tight">
+                Empower Your Apps with <br><span class="text-brandPurple">Unlimited Speed.</span>
+            </h1>
+            <p class="text-gray-400 max-w-2xl mx-auto text-lg mb-8">
+                The high-performance API suite for modern developers. Zero limits, zero cost, infinite possibilities. Choose your module and start building.
+            </p>
+            <div class="flex justify-center space-x-4">
+                <div class="px-4 py-2 rounded-full border border-purple-500/30 text-brandPurple bg-purple-500/5 text-xs font-bold flex items-center">
+                    <span class="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></span>
+                    ALL SYSTEMS OPERATIONAL
+                </div>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            
+            <!-- DaleAI Omni Card -->
+            <div class="glass p-8 rounded-3xl relative overflow-hidden group hover:border-purple-500/50 transition-all duration-500">
+                <div class="absolute top-0 right-0 p-4">
+                    <span class="bg-green-500/10 text-green-500 text-[10px] font-bold px-2 py-1 rounded uppercase tracking-tighter border border-green-500/20">Active</span>
+                </div>
+                <div class="mb-6 w-14 h-14 bg-brandPurple/10 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <i class="fas fa-brain text-brandPurple text-3xl"></i>
+                </div>
+                <h3 class="text-2xl font-bold mb-2">DaleAI Omni</h3>
+                <p class="text-gray-400 text-sm mb-6 leading-relaxed">
+                    Advanced multimodal logic engine powered by Activepieces. Seamlessly integrate complex workflows into your frontend or backend.
+                </p>
+                <div class="space-y-3">
+                    <button onclick="openDocs('dale')" class="w-full bg-brandPurple hover:bg-purple-700 text-white font-bold py-3 rounded-xl transition-all flex items-center justify-center space-x-2">
+                        <i class="fas fa-terminal text-sm"></i>
+                        <span>Get Endpoint & Docs</span>
+                    </button>
+                    <div class="flex items-center text-[10px] text-gray-500 uppercase font-bold tracking-widest justify-center">
+                        <i class="fas fa-infinity mr-2 text-brandPurple"></i> Unlimited Free Requests
+                    </div>
+                </div>
+            </div>
+
+            <!-- Nix API Card (Coming Soon) -->
+            <div class="glass p-8 rounded-3xl relative opacity-60 filter grayscale-[0.5] border-dashed border-2 border-purple-500/20">
+                <div class="absolute top-0 right-0 p-4 text-purple-400 text-xs font-bold flex items-center">
+                    <i class="fas fa-clock mr-1"></i> Q3 2024
+                </div>
+                <div class="mb-6 w-14 h-14 bg-white/5 rounded-2xl flex items-center justify-center">
+                    <i class="fas fa-microchip text-gray-500 text-3xl"></i>
+                </div>
+                <h3 class="text-2xl font-bold mb-2">Nix API</h3>
+                <p class="text-gray-400 text-sm mb-6 leading-relaxed">
+                    A revolutionary low-latency data stream designed for real-time visualization and high-frequency IoT synchronization.
+                </p>
+                <div class="py-3 px-4 rounded-xl border border-white/10 text-center text-sm font-medium text-gray-500">
+                    COMING SOON TO CODENIX
+                </div>
+            </div>
+
+            <!-- Auralith Card (Secret) -->
+            <div class="hidden-api p-8 rounded-3xl relative border border-purple-900/30 group cursor-help overflow-hidden" onclick="revealMystery()">
+                <div id="mysteryOverlay" class="absolute inset-0 flex items-center justify-center bg-black/80 z-10 group-hover:bg-black/40 transition-all">
+                    <span class="glitch-text text-brandPurple font-black text-4xl tracking-[0.2em]">? ? ?</span>
+                </div>
+                <div class="mb-6 w-14 h-14 bg-black rounded-2xl flex items-center justify-center border border-brandPurple/40">
+                    <i class="fas fa-ghost text-brandPurple text-3xl opacity-20"></i>
+                </div>
+                <h3 class="text-2xl font-bold mb-2 text-gray-700">Auralith</h3>
+                <p class="text-gray-800 text-sm mb-6 leading-relaxed">
+                    ERROR: Access Denied. Encrypted signal detected from unknown origin. Documentation is not available.
+                </p>
+                <div class="w-full h-12 bg-gray-900/50 rounded-xl"></div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Docs Modal -->
+    <div id="docsModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm hidden">
+        <div class="glass w-full max-w-3xl rounded-3xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
+            <div class="p-6 border-b border-white/10 flex justify-between items-center bg-brandPurple/10">
+                <div class="flex items-center space-x-3">
+                    <i class="fas fa-book-open text-brandPurple"></i>
+                    <h2 class="text-xl font-bold" id="modalTitle">Documentation</h2>
+                </div>
+                <button onclick="closeDocs()" class="text-gray-400 hover:text-white text-2xl">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div id="modalContent" class="p-8 max-h-[70vh] overflow-y-auto">
+                <!-- Content injected via JS -->
+            </div>
+
+            <div class="p-4 bg-black/40 text-center text-[10px] text-gray-500 tracking-widest uppercase border-t border-white/5">
+                Codenix API Infrastructure • End-to-End Encrypted
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast fixed bottom-8 left-1/2 -translate-x-1/2 z-[200] glass px-6 py-3 rounded-full flex items-center space-x-3 border-brandPurple shadow-lg">
+        <i class="fas fa-check-circle text-green-500"></i>
+        <span id="toastMsg" class="font-medium text-sm">Copied to clipboard!</span>
+    </div>
+
+    <script>
+        const body = document.body;
+        const themeToggle = document.getElementById('themeToggle');
+        const themeIcon = document.getElementById('themeIcon');
+        const modal = document.getElementById('docsModal');
+        const modalContent = document.getElementById('modalContent');
+        const modalTitle = document.getElementById('modalTitle');
+        const toast = document.getElementById('toast');
+
+        // Theme Toggle
+        themeToggle.addEventListener('click', () => {
+            document.documentElement.classList.toggle('dark');
+            const isDark = document.documentElement.classList.contains('dark');
+            themeIcon.className = isDark ? 'fas fa-sun text-xl' : 'fas fa-moon text-xl';
+            if(!isDark) {
+                body.classList.replace('bg-darkBg', 'bg-lightBg');
+                body.classList.replace('text-gray-100', 'text-gray-900');
+            } else {
+                body.classList.replace('bg-lightBg', 'bg-darkBg');
+                body.classList.replace('text-gray-900', 'text-gray-100');
+            }
+        });
+
+        const apiDocs = {
+            dale: {
+                title: 'DaleAI Omni API Reference',
+                url: 'https://cloud.activepieces.com/api/v1/webhooks/Xa2RoX0MioT81ebdT0xOR',
+                docs: `
+                    <div class="space-y-8 pb-10">
+                        <!-- Endpoint Header -->
+                        <section>
+                            <h4 class="text-brandPurple font-bold uppercase text-xs mb-3 tracking-widest">Base Endpoint</h4>
+                            <div class="bg-black p-4 rounded-xl flex justify-between items-center group border border-white/5">
+                                <code class="text-green-400 text-sm overflow-x-auto">https://cloud.activepieces.com/api/v1/webhooks/Xa2RoX0MioT81ebdT0xOR</code>
+                                <button onclick="copyText('https://cloud.activepieces.com/api/v1/webhooks/Xa2RoX0MioT81ebdT0xOR')" class="ml-4 text-gray-400 hover:text-white transition-colors">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
+                        </section>
+
+                        <!-- Modifiers -->
+                        <section class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="p-5 rounded-2xl bg-white/5 border border-white/5">
+                                <h5 class="font-bold text-white mb-2 flex items-center">
+                                    <i class="fas fa-sync-alt mr-2 text-brandPurple"></i> Synchronous Mode
+                                </h5>
+                                <p class="text-sm text-gray-400 mb-3 leading-relaxed">Append <code class="text-brandPurple">/sync</code> for immediate data return. Max 30s timeout (408 Error).</p>
+                            </div>
+                            <div class="p-5 rounded-2xl bg-white/5 border border-white/5">
+                                <h5 class="font-bold text-white mb-2 flex items-center">
+                                    <i class="fas fa-vial mr-2 text-brandPurple"></i> Testing
+                                </h5>
+                                <p class="text-sm text-gray-400 mb-3 leading-relaxed">Append <code class="text-brandPurple">/test</code> to simulate triggers without running logic.</p>
+                            </div>
+                        </section>
+
+                        <!-- JS Implementation -->
+                        <section>
+                            <div class="flex justify-between items-center mb-3">
+                                <h4 class="text-brandPurple font-bold uppercase text-xs tracking-widest">JavaScript Integration</h4>
+                                <button onclick="copyCode('jsCode')" class="text-[10px] text-gray-500 hover:text-white uppercase font-bold">Copy Code</button>
+                            </div>
+                            <div class="bg-[#0d1117] p-5 rounded-2xl border border-white/10 overflow-x-auto">
+                                <pre id="jsCode" class="text-sm code-font leading-relaxed"><span class="text-purple-400">const</span> <span class="text-blue-300">API_URL</span> = <span class="text-green-300">"https://cloud.activepieces.com/api/v1/webhooks/Xa2RoX0MioT81ebdT0xOR/sync"</span>;
+
+<span class="text-purple-400">async function</span> <span class="text-blue-300">callDaleAI</span>(payload) {
+    <span class="text-purple-400">try</span> {
+        <span class="text-purple-400">const</span> response = <span class="text-purple-400">await</span> <span class="text-blue-300">fetch</span>(API_URL, {
+            method: <span class="text-green-300">'POST'</span>,
+            headers: { <span class="text-green-300">'Content-Type'</span>: <span class="text-green-300">'application/json'</span> },
+            body: <span class="text-blue-300">JSON</span>.<span class="text-blue-300">stringify</span>(payload)
+        });
+        <span class="text-purple-400">return await</span> response.<span class="text-blue-300">json</span>();
+    } <span class="text-purple-400">catch</span> (error) {
+        <span class="text-gray-500">// Handle errors</span>
+        <span class="text-blue-300">console</span>.<span class="text-blue-300">error</span>(error);
+    }
+}</pre>
+                            </div>
+                        </section>
+
+                        <!-- Python Implementation -->
+                        <section>
+                            <div class="flex justify-between items-center mb-3">
+                                <h4 class="text-brandPurple font-bold uppercase text-xs tracking-widest">Python Implementation</h4>
+                                <button onclick="copyCode('pythonCode')" class="text-[10px] text-gray-500 hover:text-white uppercase font-bold">Copy Code</button>
+                            </div>
+                            <div class="bg-[#0d1117] p-5 rounded-2xl border border-white/10 overflow-x-auto">
+                                <pre id="pythonCode" class="text-sm code-font leading-relaxed"><span class="text-purple-400">import</span> requests
+
+<span class="text-purple-400">def</span> <span class="text-blue-300">call_dale_ai</span>(payload):
+    url = <span class="text-green-300">"https://cloud.activepieces.com/api/v1/webhooks/Xa2RoX0MioT81ebdT0xOR/sync"</span>
+    
+    <span class="text-purple-400">try</span>:
+        response = requests.post(url, json=payload)
+        response.raise_for_status()
+        <span class="text-purple-400">return</span> response.json()
+    <span class="text-purple-400">except</span> Exception <span class="text-purple-400">as</span> e:
+        <span class="text-blue-300">print</span>(f<span class="text-green-300">"Error: {e}"</span>)</pre>
+                            </div>
+                        </section>
+
+                        <section class="bg-purple-900/10 border border-purple-500/20 p-5 rounded-2xl">
+                            <h5 class="font-bold text-brandPurple mb-2 uppercase text-[10px] tracking-widest">Integration Notes</h5>
+                            <ul class="text-xs text-gray-400 space-y-2">
+                                <li class="flex items-start"><i class="fas fa-check-circle mr-2 text-brandPurple mt-0.5"></i> Ensure your payload is a valid JSON object.</li>
+                                <li class="flex items-start"><i class="fas fa-check-circle mr-2 text-brandPurple mt-0.5"></i> The flow must contain a 'Return Response' step for /sync mode.</li>
+                                <li class="flex items-start"><i class="fas fa-check-circle mr-2 text-brandPurple mt-0.5"></i> Requests are unlimited under the Codenix Free Tier.</li>
+                            </ul>
+                        </section>
+                    </div>
+                `
+            }
+        };
+
+        function openDocs(api) {
+            const data = apiDocs[api];
+            modalTitle.innerText = data.title;
+            modalContent.innerHTML = data.docs;
+            modal.classList.remove('hidden');
+            body.style.overflow = 'hidden';
+        }
+
+        function closeDocs() {
+            modal.classList.add('hidden');
+            body.style.overflow = 'auto';
+        }
+
+        function copyText(text) {
+            const tempInput = document.createElement("input");
+            tempInput.value = text;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand("copy");
+            document.body.removeChild(tempInput);
+            showToast("Endpoint copied to clipboard!");
+        }
+
+        function copyCode(elementId) {
+            const code = document.getElementById(elementId).innerText;
+            const tempInput = document.createElement("textarea");
+            tempInput.value = code;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand("copy");
+            document.body.removeChild(tempInput);
+            showToast("Source code copied!");
+        }
+
+        function showToast(msg) {
+            document.getElementById('toastMsg').innerText = msg;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        function revealMystery() {
+            const overlay = document.getElementById('mysteryOverlay');
+            overlay.innerHTML = '<div class="text-center p-6"><i class="fas fa-circle-notch fa-spin text-brandPurple text-2xl mb-2"></i><div class="text-[10px] uppercase tracking-widest text-brandPurple font-bold">Bypassing Firewall...</div></div>';
+            setTimeout(() => {
+                showToast("Connection Interrupted: Origin Trace Failed");
+                overlay.innerHTML = '<span class="glitch-text text-brandPurple font-black text-4xl tracking-[0.2em]">? ? ?</span>';
+            }, 1500);
+        }
+
+        // Close modal on escape
+        document.onkeydown = function(evt) {
+            evt = evt || window.event;
+            if (evt.keyCode == 27) {
+                closeDocs();
+            }
+        };
+    </script>
+</body>
+</html>

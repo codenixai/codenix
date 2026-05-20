@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tiny Melon | AI Image Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background: linear-gradient(135deg, #1a2e05 0%, #0d1a03 100%);
+            min-height: 100vh;
+            color: #f0fdf4;
+        }
+        .melon-glass {
+            background: rgba(45, 90, 39, 0.2);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(163, 230, 53, 0.2);
+        }
+        .melon-gradient-text {
+            background: linear-gradient(to right, #a3e635, #4ade80);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .loader {
+            border: 4px solid rgba(163, 230, 53, 0.1);
+            border-left-color: #a3e635;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .img-container img {
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            background: #000;
+        }
+        .img-container:hover img {
+            transform: scale(1.02);
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <div class="max-w-6xl mx-auto">
+        <!-- Header -->
+        <header class="flex items-center justify-between mb-12">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-lime-400 rounded-2xl flex items-center justify-center shadow-lg shadow-lime-500/20">
+                    <i class="fa-solid fa-lemon text-black text-2xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-3xl font-bold tracking-tight">Tiny <span class="melon-gradient-text">Melon</span></h1>
+                    <p class="text-lime-400/60 text-sm">Deliciously generated AI Art</p>
+                </div>
+            </div>
+            <div class="hidden md:flex gap-6 text-sm font-semibold text-lime-100/70">
+                <a href="#" class="hover:text-lime-400 transition">Gallery</a>
+                <a href="#" class="hover:text-lime-400 transition">Models</a>
+            </div>
+        </header>
+
+        <main class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <!-- Sidebar Controls -->
+            <aside class="lg:col-span-4 space-y-6">
+                <div class="melon-glass p-6 rounded-3xl space-y-6">
+                    <div>
+                        <label class="block text-sm font-bold mb-3 text-lime-100">Describe your vision</label>
+                        <textarea id="prompt" rows="4" 
+                            class="w-full bg-black/40 border border-lime-500/30 rounded-2xl p-4 text-white placeholder-lime-700 focus:ring-2 focus:ring-lime-500 focus:outline-none transition"
+                            placeholder="A tiny glowing melon planet floating in deep space, hyper-realistic, 8k..."></textarea>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold mb-2 uppercase tracking-wider text-lime-400/70">Model</label>
+                            <select id="model" class="w-full bg-black/40 border border-lime-500/30 rounded-xl p-3 text-sm focus:outline-none text-white">
+                                <option value="flux">Flux.1 (Default)</option>
+                                <option value="flux-realism">Flux Realism</option>
+                                <option value="any">Standard AI</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold mb-2 uppercase tracking-wider text-lime-400/70">Resolution</label>
+                            <select id="ratio" class="w-full bg-black/40 border border-lime-500/30 rounded-xl p-3 text-sm focus:outline-none text-white">
+                                <option value="1024x1024">Square (1:1)</option>
+                                <option value="1280x720">Wide (16:9)</option>
+                                <option value="720x1280">Tall (9:16)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button id="generateBtn" 
+                        class="w-full bg-lime-400 hover:bg-lime-300 text-black font-bold py-4 rounded-2xl shadow-xl shadow-lime-500/20 transition transform active:scale-95 flex items-center justify-center gap-2">
+                        <span>Generate Image</span>
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    </button>
+                </div>
+            </aside>
+
+            <!-- Results Area -->
+            <section class="lg:col-span-8">
+                <div id="outputContainer" class="melon-glass min-h-[500px] rounded-3xl flex flex-col items-center justify-center p-4 relative overflow-hidden">
+                    <!-- Default Empty State -->
+                    <div id="emptyState" class="text-center space-y-4">
+                        <div class="w-24 h-24 bg-lime-500/5 rounded-full flex items-center justify-center mx-auto border border-lime-500/10">
+                            <i class="fa-solid fa-image text-4xl text-lime-500/20"></i>
+                        </div>
+                        <p class="text-lime-100/30 font-medium">Your masterpiece will appear here</p>
+                    </div>
+
+                    <!-- Loading State -->
+                    <div id="loadingState" class="hidden flex flex-col items-center gap-4">
+                        <div class="loader"></div>
+                        <p class="text-lime-400 font-bold animate-pulse">Growing your melon...</p>
+                    </div>
+
+                    <!-- Image Display -->
+                    <div id="imageDisplay" class="hidden w-full h-full flex flex-col items-center">
+                        <div class="img-container relative group rounded-2xl overflow-hidden shadow-2xl">
+                            <img id="resultImage" src="" alt="Generated Image" class="max-w-full max-h-[70vh] rounded-2xl">
+                            <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
+                                <button onclick="downloadImage()" class="p-3 bg-white text-black rounded-full hover:bg-lime-400 transition">
+                                    <i class="fa-solid fa-download"></i>
+                                </button>
+                                <button onclick="copyLink()" class="p-3 bg-white text-black rounded-full hover:bg-lime-400 transition">
+                                    <i class="fa-solid fa-link"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="mt-6 flex flex-wrap justify-center gap-2">
+                            <span class="px-3 py-1 bg-lime-500/10 border border-lime-500/20 rounded-full text-xs text-lime-400" id="badgeModel"></span>
+                            <span class="px-3 py-1 bg-lime-500/10 border border-lime-500/20 rounded-full text-xs text-lime-400" id="badgeRes"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- History -->
+                <div class="mt-8">
+                    <h3 class="text-lg font-bold mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-clock-rotate-left text-lime-400"></i>
+                        Recent Harvest
+                    </h3>
+                    <div id="historyGrid" class="grid grid-cols-3 md:grid-cols-5 gap-4"></div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        const promptInput = document.getElementById('prompt');
+        const generateBtn = document.getElementById('generateBtn');
+        const modelSelect = document.getElementById('model');
+        const ratioSelect = document.getElementById('ratio');
+        
+        const emptyState = document.getElementById('emptyState');
+        const loadingState = document.getElementById('loadingState');
+        const imageDisplay = document.getElementById('imageDisplay');
+        const resultImage = document.getElementById('resultImage');
+        const historyGrid = document.getElementById('historyGrid');
+
+        let currentImageUrl = "";
+        const history = [];
+
+        generateBtn.addEventListener('click', () => {
+            const prompt = promptInput.value.trim();
+            if (!prompt) return;
+
+            setLoading(true);
+
+            const seed = Math.floor(Math.random() * 9999999);
+            const model = modelSelect.value;
+            const res = ratioSelect.value.split('x');
+            const width = res[0];
+            const height = res[1];
+
+            // Updated URL format to be more robust for Pollinations.ai
+            // nologo=true helps skip some redirect/overlay logic that might trigger source errors
+            const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=${width}&height=${height}&seed=${seed}&model=${model}&nologo=true`;
+            
+            // Log for debugging
+            console.log("Generating URL:", imageUrl);
+
+            resultImage.onload = () => {
+                currentImageUrl = imageUrl;
+                document.getElementById('badgeModel').innerText = `Model: ${model.toUpperCase()}`;
+                document.getElementById('badgeRes').innerText = `${width}x${height}`;
+                addToHistory(imageUrl, prompt);
+                setLoading(false);
+            };
+
+            resultImage.onerror = () => {
+                setLoading(false);
+                imageDisplay.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+                console.error("Failed to load image from source. Retrying with default model...");
+                
+                // One-time fallback for reliability
+                if (!imageUrl.includes('model=any')) {
+                     const fallbackUrl = imageUrl.replace(/model=[^&]+/, 'model=any');
+                     resultImage.src = fallbackUrl;
+                }
+            };
+
+            resultImage.src = imageUrl;
+        });
+
+        function setLoading(isLoading) {
+            generateBtn.disabled = isLoading;
+            if (isLoading) {
+                emptyState.classList.add('hidden');
+                imageDisplay.classList.add('hidden');
+                loadingState.classList.remove('hidden');
+            } else {
+                loadingState.classList.add('hidden');
+                imageDisplay.classList.remove('hidden');
+            }
+        }
+
+        function addToHistory(url, prompt) {
+            if (history.find(item => item.url === url)) return;
+            history.unshift({ url, prompt });
+            if (history.length > 5) history.pop();
+            renderHistory();
+        }
+
+        function renderHistory() {
+            historyGrid.innerHTML = history.map(item => `
+                <div class="aspect-square rounded-xl overflow-hidden cursor-pointer border border-lime-500/20 hover:border-lime-400 transition" 
+                     onclick="loadFromHistory('${item.url}', '${item.prompt.replace(/'/g, "\\'")}')">
+                    <img src="${item.url}" class="w-full h-full object-cover">
+                </div>
+            `).join('');
+        }
+
+        function loadFromHistory(url, prompt) {
+            promptInput.value = prompt;
+            resultImage.src = url;
+            currentImageUrl = url;
+            imageDisplay.classList.remove('hidden');
+            emptyState.classList.add('hidden');
+        }
+
+        function downloadImage() {
+            if (!currentImageUrl) return;
+            window.open(currentImageUrl, '_blank');
+        }
+
+        function copyLink() {
+            if (!currentImageUrl) return;
+            const dummy = document.createElement('input');
+            document.body.appendChild(dummy);
+            dummy.value = currentImageUrl;
+            dummy.select();
+            document.execCommand('copy');
+            document.body.removeChild(dummy);
+        }
+    </script>
+</body>
+</html>

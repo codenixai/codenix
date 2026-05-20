@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChartNix | Longcat Powered Visualizer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'media',
+            theme: {
+                extend: {
+                    colors: {
+                        purple: {
+                            50: '#f5f3ff', 100: '#ede9fe', 200: '#ddd6fe', 300: '#c4b5fd',
+                            400: '#a78bfa', 500: '#8b5cf6', 600: '#7c3aed', 700: '#6d28d9',
+                            800: '#5b21b6', 900: '#4c1d95', 950: '#2e1065',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; transition: background-color 0.3s ease; }
+        @media (prefers-color-scheme: light) {
+            body { background-color: #ffffff; color: #1e1b4b; }
+            .chat-bubble-ai { background-color: #f5f3ff; border: 1px solid #ddd6fe; }
+            .sidebar { background-color: #fafafa; border-right: 1px solid #e5e7eb; }
+        }
+        @media (prefers-color-scheme: dark) {
+            body { background-color: #000000; color: #f5f3ff; }
+            .chat-bubble-ai { background-color: #1e1b4b; border: 1px solid #4c1d95; }
+            .sidebar { background-color: #0a0a0a; border-right: 1px solid #1e1b4b; }
+        }
+        .mermaid-card {
+            background: white !important;
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 12px;
+            position: relative;
+            border: 1px solid #e2e8f0;
+            min-height: 100px;
+        }
+        .scroll-custom::-webkit-scrollbar { width: 4px; }
+        .scroll-custom::-webkit-scrollbar-thumb { background: #8b5cf6; border-radius: 10px; }
+        .mobile-nav-active { transform: translateX(0) !important; }
+        .mermaid svg { min-width: 300px; height: auto; display: block; margin: 0 auto; }
+        .export-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(139, 92, 246, 0.1);
+            color: #8b5cf6;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            transition: all 0.2s;
+            z-index: 10;
+        }
+        .export-btn:hover {
+            background: #8b5cf6;
+            color: white;
+        }
+    </style>
+</head>
+<body class="h-screen flex flex-col md:flex-row overflow-hidden">
+
+    <script>
+        const supabaseUrl = 'https://rnlwrngfgvznndlekmrz.supabase.co';
+        const supabaseKey = 'sb_publishable_mtI0_ZBvU_n5oRuqV58QHg_qJt3Gfyt';
+        const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+
+        async function checkAuth() {
+            try {
+                const { data: { session }, error } = await supabaseClient.auth.getSession();
+                if (error || !session) window.location.replace('/auth.html');
+            } catch (e) {
+                console.error("Auth check failed", e);
+            }
+        }
+        checkAuth();
+
+        supabaseClient.auth.onAuthStateChange((event, session) => {
+            if (event === 'SIGNED_OUT' || !session) window.location.replace('/auth.html');
+        });
+    </script>
+
+    <aside id="sidebar" class="sidebar fixed md:relative z-50 w-72 h-full transition-transform -translate-x-full md:translate-x-0 flex flex-col">
+        <div class="p-6 flex items-center justify-between">
+            <h1 class="text-xl font-bold text-purple-600 flex items-center gap-2">
+                <i class="fas fa-project-diagram"></i> ChartNix
+            </h1>
+            <button onclick="toggleSidebar()" class="md:hidden text-purple-600"><i class="fas fa-times text-lg"></i></button>
+        </div>
+        
+        <div class="px-4 mb-4">
+            <button onclick="createNewChat()" class="w-full py-3 px-4 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-medium flex items-center justify-center gap-2 transition-all shadow-lg shadow-purple-500/20">
+                <i class="fas fa-plus"></i> <span>New Chart</span>
+            </button>
+        </div>
+
+        <div class="flex-1 overflow-y-auto px-4 space-y-2 scroll-custom">
+            <p class="text-[10px] uppercase tracking-widest text-purple-400 font-bold px-2 mb-2">History</p>
+            <div id="historyList" class="space-y-1"></div>
+        </div>
+
+        <div class="p-4 border-t border-purple-100 dark:border-purple-900 space-y-2">
+            <button onclick="toggleModal('guideModal')" class="w-full p-2.5 text-sm rounded-lg hover:bg-purple-100 dark:hover:bg-purple-900/40 flex items-center gap-3 transition-colors">
+                <i class="fas fa-lightbulb text-purple-500"></i> <span>Syntax Guide</span>
+            </button>
+            <button onclick="handleLogout()" class="w-full p-2.5 text-sm rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-3 transition-colors">
+                <i class="fas fa-sign-out-alt"></i> <span>Sign Out</span>
+            </button>
+        </div>
+    </aside>
+
+    <div id="mobileOverlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/50 z-40 hidden md:hidden"></div>
+
+    <main class="flex-1 flex flex-col h-full relative min-w-0">
+        <header class="h-16 flex items-center justify-between px-4 md:px-8 border-b border-purple-100 dark:border-purple-950">
+            <div class="flex items-center gap-4">
+                <button onclick="toggleSidebar()" class="md:hidden p-2 text-purple-600 bg-purple-50 dark:bg-purple-900/30 rounded-lg"><i class="fas fa-bars"></i></button>
+                <h2 class="font-semibold text-purple-900 dark:text-purple-100" id="currentChatTitle">Untitled Chart</h2>
+            </div>
+            <span class="text-[10px] font-bold px-2 py-1 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 uppercase tracking-tighter">Longcat-Chat-Flash</span>
+        </header>
+
+        <div id="chatBox" class="flex-1 overflow-y-auto p-4 md:p-8 space-y-6 scroll-custom">
+            <div class="max-w-3xl mx-auto flex flex-col items-center justify-center h-full text-center space-y-4" id="emptyState">
+                <div class="w-20 h-20 bg-purple-100 dark:bg-purple-900/30 rounded-3xl flex items-center justify-center text-3xl text-purple-600">
+                    <i class="fas fa-chart-bar"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-purple-900 dark:text-purple-50">AI Chart Generator</h3>
+                <p class="text-slate-500 max-w-sm">Describe a flow or provide data for a chart. I'll visualize it using Mermaid.js.</p>
+            </div>
+        </div>
+
+        <div class="p-4 md:pb-8">
+            <div class="max-w-3xl mx-auto relative">
+                <div class="bg-white dark:bg-zinc-900 border-2 border-purple-100 dark:border-purple-900 rounded-2xl shadow-2xl focus-within:border-purple-500 transition-all overflow-hidden">
+                    <textarea 
+                        id="userInput"
+                        rows="1" 
+                        class="w-full bg-transparent border-none focus:ring-0 resize-none p-4 text-sm md:text-base pr-14 dark:text-white"
+                        placeholder="e.g., 'Make a pie chart of fruit sales' or 'Flow of a login process'..."
+                        oninput="autoResize(this)"
+                        onkeydown="if(event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); handleSendMessage(); }"
+                    ></textarea>
+                    <button 
+                        id="sendBtn"
+                        onclick="handleSendMessage()"
+                        class="absolute right-2 bottom-2 bg-purple-600 hover:bg-purple-500 text-white w-10 h-10 rounded-xl flex items-center justify-center transition-all"
+                    >
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="guideModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] hidden flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-zinc-950 w-full max-w-lg rounded-2xl p-6 shadow-2xl border border-purple-100 dark:border-purple-900">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-purple-600">Visualization Guide</h3>
+                <button onclick="toggleModal('guideModal')" class="text-slate-400 hover:text-purple-500"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="space-y-4 text-sm dark:text-purple-100">
+                <p>I can generate various types of visualizations:</p>
+                <ul class="list-disc pl-5 space-y-1">
+                    <li><strong>Flowcharts:</strong> "How to make coffee" or "User signup flow"</li>
+                    <li><strong>Pie Charts:</strong> "Pie chart of revenue: Sales 40%, Ads 30%, Subs 30%"</li>
+                    <li><strong>Sequence:</strong> "Sequence diagram of API call"</li>
+                    <li><strong>Gantt:</strong> "Project timeline for April"</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const LONGCAT_API_KEY = "ak_2rU1Lo7PA23X5Is9wm3m69EY2T37J";
+        const LONGCAT_ENDPOINT = "https://api.longcat.chat/openai/v1/chat/completions";
+
+        async function fetchDiagramFromLongcat(prompt) {
+            try {
+                const response = await fetch(LONGCAT_ENDPOINT, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${LONGCAT_API_KEY}`
+                    },
+                    body: JSON.stringify({ 
+                        model: "LongCat-Flash-Chat",
+                        messages: [
+                            {
+                                role: "system",
+                                content: `You are an expert Mermaid.js generator. 
+                                Your task is to output ONLY the raw Mermaid.js code for the requested visualization.
+                                1. If the user asks for a flowchart or a process, use 'graph TD' or 'flowchart LR'.
+                                2. If the user asks for data visualization, use 'pie', 'xychart-beta' (for bar/line), or 'gantt'.
+                                3. If the user asks for a 'chart', prefer 'pie' or 'xychart-beta' based on context.
+                                4. Output ONLY the code. Do NOT include markdown backticks like \`\`\`mermaid. 
+                                5. Ensure the syntax is valid for Mermaid.js version 10+.`
+                            },
+                            {
+                                role: "user",
+                                content: prompt
+                            }
+                        ],
+                        temperature: 0.1,
+                        stream: false
+                    })
+                });
+
+                if (!response.ok) {
+                    const errBody = await response.json().catch(() => ({}));
+                    throw new Error(errBody.error?.message || `API Error: ${response.status}`);
+                }
+
+                const data = await response.json();
+                const content = data.choices[0].message.content.trim();
+                const cleanMermaid = content.replace(/^```mermaid\s?/, '').replace(/```$/, '').trim();
+
+                return {
+                    explanation: "Visualization ready:",
+                    mermaid: cleanMermaid
+                };
+            } catch (err) {
+                console.error("Longcat Fetch Error:", err);
+                return { error: err.message };
+            }
+        }
+
+        let chats = JSON.parse(localStorage.getItem('chartnix_longcat_v2')) || [];
+        let currentChatId = null;
+
+        window.onload = () => {
+            renderHistory();
+            try {
+                if (window.mermaid) {
+                    mermaid.initialize({ 
+                        startOnLoad: false, 
+                        theme: 'neutral', 
+                        securityLevel: 'loose',
+                        flowchart: { useMaxWidth: true, htmlLabels: true, curve: 'basis' }
+                    });
+                }
+            } catch (e) {
+                console.error("Mermaid init failed", e);
+            }
+        };
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobileOverlay');
+            if (sidebar) sidebar.classList.toggle('mobile-nav-active');
+            if (overlay) overlay.classList.toggle('hidden');
+        }
+
+        function autoResize(textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = Math.min(textarea.scrollHeight, 200) + 'px';
+        }
+
+        function toggleModal(id) {
+            const modal = document.getElementById(id);
+            if (modal) modal.classList.toggle('hidden');
+        }
+
+        function createNewChat() {
+            currentChatId = Date.now();
+            const chatBox = document.getElementById('chatBox');
+            if (chatBox) chatBox.innerHTML = `
+                <div class="max-w-3xl mx-auto flex flex-col items-center justify-center h-full text-center space-y-4" id="emptyState">
+                    <div class="w-20 h-20 bg-purple-100 dark:bg-purple-900/30 rounded-3xl flex items-center justify-center text-3xl text-purple-600">
+                        <i class="fas fa-chart-bar"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-purple-900 dark:text-purple-50">AI Chart Generator</h3>
+                    <p class="text-slate-500 max-w-sm">Describe a flow or provide data for a chart. I'll visualize it using Mermaid.js.</p>
+                </div>
+            `;
+            const title = document.getElementById('currentChatTitle');
+            if (title) title.innerText = "New Visualization";
+        }
+
+        async function handleSendMessage() {
+            const input = document.getElementById('userInput');
+            const btn = document.getElementById('sendBtn');
+            const text = input.value.trim();
+            if (!text) return;
+
+            if (!currentChatId) currentChatId = Date.now();
+            const emptyState = document.getElementById('emptyState');
+            if (emptyState) emptyState.classList.add('hidden');
+            
+            appendBubble('user', text);
+            input.value = '';
+            btn.disabled = true;
+
+            const processingId = appendBubble('ai', '<span class="flex items-center gap-2"><i class="fas fa-cog animate-spin"></i> Processing with Longcat...</span>');
+            
+            const result = await fetchDiagramFromLongcat(text);
+            
+            if (result && result.mermaid && !result.error) {
+                updateBubble(processingId, result.explanation, result.mermaid);
+                saveToHistory(currentChatId, text, result.explanation, result.mermaid);
+            } else {
+                updateBubble(processingId, `<span class="text-red-500">Error: ${result?.error || 'Failed to connect to Longcat.'}</span>`);
+            }
+            btn.disabled = false;
+        }
+
+        function appendBubble(role, content) {
+            const chatBox = document.getElementById('chatBox');
+            if (!chatBox) return;
+            const id = 'msg-' + Date.now() + Math.random();
+            const isAi = role === 'ai';
+            const html = `
+                <div id="${id}" class="flex ${isAi ? 'justify-start' : 'justify-end'} animate-in fade-in slide-in-from-bottom-2 duration-300">
+                    <div class="max-w-[90%] md:max-w-[85%] ${isAi ? 'chat-bubble-ai' : 'bg-purple-600 text-white'} p-4 rounded-2xl shadow-sm relative group">
+                        <div class="text-sm content-area">${content}</div>
+                        <div class="mermaid-target hidden w-full overflow-x-auto overflow-y-hidden pt-2"></div>
+                    </div>
+                </div>`;
+            chatBox.insertAdjacentHTML('beforeend', html);
+            chatBox.scrollTop = chatBox.scrollHeight;
+            return id;
+        }
+
+        function updateBubble(id, text, mermaidCode) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            const contentArea = el.querySelector('.content-area');
+            const target = el.querySelector('.mermaid-target');
+            
+            if (contentArea) contentArea.innerHTML = text;
+            if (mermaidCode && target) {
+                target.classList.remove('hidden');
+                const mId = 'm' + Math.random().toString(36).substr(2, 9);
+                target.innerHTML = `
+                    <div class="mermaid-card">
+                        <button onclick="downloadImage('${mId}')" class="export-btn">
+                            <i class="fas fa-download mr-1"></i> PNG
+                        </button>
+                        <div class="mermaid" id="${mId}">${mermaidCode}</div>
+                    </div>`;
+                try {
+                    setTimeout(() => {
+                        const mEl = document.getElementById(mId);
+                        if (mEl && window.mermaid) {
+                            mermaid.init(undefined, mEl);
+                        }
+                    }, 50);
+                } catch (e) {
+                    target.innerHTML += `<p class="text-xs text-red-500 mt-2">Render error.</p>`;
+                }
+            }
+            const chatBox = document.getElementById('chatBox');
+            if (chatBox) chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function downloadImage(mId) {
+            const svgElement = document.querySelector(`#${mId} svg`);
+            if (!svgElement) return;
+
+            try {
+                const svgData = new XMLSerializer().serializeToString(svgElement);
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                const img = new Image();
+                
+                // Solve "Tainted Canvas" by forcing crossOrigin
+                img.crossOrigin = "anonymous";
+
+                const bbox = svgElement.getBBox();
+                const padding = 60; // More padding for safety
+                canvas.width = bbox.width + padding;
+                canvas.height = bbox.height + padding;
+
+                img.onload = () => {
+                    ctx.fillStyle = 'white';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    ctx.drawImage(img, padding / 2, padding / 2);
+                    
+                    try {
+                        const pngUrl = canvas.toDataURL('image/png');
+                        const downloadLink = document.createElement('a');
+                        downloadLink.href = pngUrl;
+                        downloadLink.download = `chartnix-${Date.now()}.png`;
+                        document.body.appendChild(downloadLink);
+                        downloadLink.click();
+                        document.body.removeChild(downloadLink);
+                    } catch (urlErr) {
+                        console.warn("Canvas toDataURL failed, falling back to SVG download", urlErr);
+                        downloadSVG(svgData);
+                    }
+                };
+
+                img.onerror = () => {
+                    console.error("Image load failed for export, falling back to SVG");
+                    downloadSVG(svgData);
+                };
+
+                // Use Base64 encoded string instead of URL.createObjectURL to help bypass some security restrictions
+                const svgBase64 = btoa(unescape(encodeURIComponent(svgData)));
+                img.src = 'data:image/svg+xml;base64,' + svgBase64;
+
+            } catch (e) {
+                console.error("PNG Download failed entirely", e);
+                const rawSvg = new XMLSerializer().serializeToString(svgElement);
+                downloadSVG(rawSvg);
+            }
+        }
+
+        function downloadSVG(svgData) {
+            const blob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const downloadLink = document.createElement('a');
+            downloadLink.href = url;
+            downloadLink.download = `chartnix-${Date.now()}.svg`;
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+            URL.revokeObjectURL(url);
+        }
+
+        function saveToHistory(id, title, text, mermaid) {
+            const existing = chats.find(c => c.id === id);
+            const msg = { text, role: 'ai', mermaid };
+            if (!existing) {
+                chats.unshift({ id, title: title.substring(0, 25) + '...', messages: [{text: title, role: 'user'}, msg] });
+            } else {
+                existing.messages.push({text: title, role: 'user'}, msg);
+            }
+            localStorage.setItem('chartnix_longcat_v2', JSON.stringify(chats));
+            renderHistory();
+        }
+
+        function renderHistory() {
+            const list = document.getElementById('historyList');
+            if (!list) return;
+            list.innerHTML = chats.map(chat => `
+                <div onclick="loadChat(${chat.id})" class="p-3 rounded-xl hover:bg-purple-100 dark:hover:bg-purple-900/30 cursor-pointer transition-all">
+                    <span class="text-sm truncate block font-medium text-purple-900 dark:text-purple-200">
+                        <i class="fas fa-history mr-2 opacity-50"></i>${chat.title}
+                    </span>
+                </div>
+            `).join('');
+        }
+
+        function loadChat(id) {
+            const chat = chats.find(c => c.id === id);
+            if (!chat) return;
+            currentChatId = id;
+            const chatBox = document.getElementById('chatBox');
+            if (chatBox) {
+                chatBox.innerHTML = '';
+                const title = document.getElementById('currentChatTitle');
+                if (title) title.innerText = chat.title;
+                chat.messages.forEach(m => {
+                    const bId = appendBubble(m.role, m.text);
+                    if (m.mermaid) updateBubble(bId, m.text, m.mermaid);
+                });
+            }
+            if (window.innerWidth < 768) toggleSidebar();
+        }
+
+        async function handleLogout() {
+            try {
+                await supabaseClient.auth.signOut();
+                window.location.replace('/auth.html');
+            } catch (e) {
+                window.location.replace('/auth.html');
+            }
+        }
+    </script>
+</body>
+</html>
